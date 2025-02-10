@@ -1,0 +1,46 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-golang:
+    name: Build Extension
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+
+      - name: Build
+        run: |
+          pushd src
+          go build -o ./build
+          popd
+
+  publish-local:
+    name: Publish Locally
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+  
+      - name: Intall Bicep
+        run: az bicep install --version v0.33.93
+        
+      - name: Publish Locally
+        run: |
+          bash scripts/publish.sh bicep-ext-http
